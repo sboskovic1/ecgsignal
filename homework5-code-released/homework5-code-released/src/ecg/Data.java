@@ -7,9 +7,7 @@ public class Data {
 
 	// TODO: Update the path to the datasets
 	private static final String PATH =
-		"/home/konstantinos/Dropbox/Work/" +
-		"Courses-Rice/COMP 418-518 - Spring 2024/homeworks/" +
-		"homework 5/homework5-code-solutions/data/";
+		"/storage-home/s/sb121/comp518/hw5/ecgsignal/homework5-code-released/homework5-code-released/data/";
 
 	private Data() {
 		// nothing to do
