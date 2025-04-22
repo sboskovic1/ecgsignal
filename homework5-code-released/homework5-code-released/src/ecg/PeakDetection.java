@@ -20,22 +20,17 @@ public class PeakDetection {
         Query<Integer, Integer> y1 = Q.sWindowInv(5, 0, Integer::sum, (a, b) -> a - b);
         Query<Integer, Double> y2 = Q.map(i -> i / 5.0);
 
-        Query<Double, Double> d1 = Q.sWindow3((a, b, c) -> (a + b + c) / 2.0);
-        Query<Double, Double> d2 = Q.map((a) -> a / 2.0);
+        Query<Double, Double> d = Q.sWindow3((a, b, c) -> (a - c) / 2.0);
 
         Query<Double, Double> t= Q.map(i -> Math.sqrt(1.0 + i * i));
         Query<Double, Double> l = Q.sWindowInv(41, 0.0, Double::sum, (Double a, Double b) -> a - b);
 
         Query<Integer, Integer> p1 = Q.pipeline(x, y1);
         Query<Integer, Double> p2 = Q.pipeline(p1, y2);
-        Query<Integer, Double> p3 = Q.pipeline(p2, d1);
-        Query<Integer, Double> p4 = Q.pipeline(p2, d2);
-
-        Query<Integer, Double> d3 = Q.parallel(p3, p4, (a, b) -> a - b);
-
-        Query<Integer, Double> p5 = Q.pipeline(d3, t);
+        Query<Integer, Double> p3 = Q.pipeline(p2, d);
+        Query<Integer, Double> p4 = Q.pipeline(p3, t);
         
-        return Q.pipeline(p5, l);
+        return Q.pipeline(p4, l);
 	}
 
 	// In order to detect peaks we need both the raw (or adjusted)
