@@ -1,5 +1,8 @@
 package ra;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import dsl.Query;
 import dsl.Sink;
 import utils.Pair;
@@ -20,10 +23,13 @@ import utils.functions.Func2;
 
 public class GroupBy<K,A,B> implements Query<Pair<K,A>,Pair<K,B>> {
 
-	// TODO
+	B init;
+	Func2<B,A,B> op;
+	Map<K,B> groups;
 
 	private GroupBy(B init, Func2<B,A,B> op) {
-		// TODO
+		this.init = init;
+		this.op = op;
 	}
 
 	public static <K,A,B> GroupBy<K,A,B> from(B init, Func2<B,A,B> op) {
@@ -32,17 +38,24 @@ public class GroupBy<K,A,B> implements Query<Pair<K,A>,Pair<K,B>> {
 
 	@Override
 	public void start(Sink<Pair<K,B>> sink) {
-		// TODO
+		this.groups = new LinkedHashMap<>();
 	}
 
 	@Override
 	public void next(Pair<K,A> item, Sink<Pair<K,B>> sink) {
-		// TODO
+		K key = item.getLeft();
+        A value = item.getRight();
+        groups.putIfAbsent(key, init);
+        B soFar = groups.get(key);
+        B updated = op.apply(soFar, value);
+        groups.put(key, updated);
 	}
 
 	@Override
 	public void end(Sink<Pair<K,B>> sink) {
-		// TODO
+		for (Map.Entry<K,B> e : groups.entrySet()) {
+            sink.next(Pair.from(e.getKey(), e.getValue()));
+        }
 	}
 	
 }

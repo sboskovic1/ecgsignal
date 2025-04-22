@@ -1,6 +1,8 @@
 package ra;
 
 import java.util.function.BiPredicate;
+import java.util.ArrayList;
+import java.util.List;
 
 import dsl.Query;
 import dsl.Sink;
@@ -17,10 +19,12 @@ import utils.Pair;
 
 public class ThetaJoin<A,B> implements Query<Or<A,B>,Pair<A,B>> {
 
-	// TODO
+	BiPredicate<A,B> theta;
+    List<A> leftBuffer;
+    List<B> rightBuffer;
 
 	private ThetaJoin(BiPredicate<A,B> theta) {
-		// TODO
+		this.theta = theta;
 	}
 
 	public static <A,B> ThetaJoin<A,B> from(BiPredicate<A,B> theta) {
@@ -29,17 +33,35 @@ public class ThetaJoin<A,B> implements Query<Or<A,B>,Pair<A,B>> {
 
 	@Override
 	public void start(Sink<Pair<A,B>> sink) {
-		// TODO
+		leftBuffer  = new ArrayList<>();
+        rightBuffer = new ArrayList<>();
 	}
 
 	@Override
 	public void next(Or<A,B> item, Sink<Pair<A,B>> sink) {
-		// TODO
-	}
+		if (item.isLeft()) {
+            A a = item.getLeft();
+            for (B b : rightBuffer) {
+                if (theta.test(a, b)) {
+                    sink.next(Pair.from(a, b));
+                }
+            }
+            leftBuffer.add(a);
+        } else {
+            B b = item.getRight();
+            for (A a : leftBuffer) {
+                if (theta.test(a, b)) {
+                    sink.next(Pair.from(a, b));
+                }
+            }
+            rightBuffer.add(b);
+        }
+    }
+
 
 	@Override
 	public void end(Sink<Pair<A,B>> sink) {
-		// TODO
+		// Nothing to do
 	}
 	
 }
