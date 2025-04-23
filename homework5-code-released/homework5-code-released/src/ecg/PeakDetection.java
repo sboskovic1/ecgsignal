@@ -4,6 +4,8 @@ import dsl.S;
 import dsl.Q;
 import dsl.Query;
 
+import utils.Or;
+
 public class PeakDetection {
 
 	// The curve length transformation:
@@ -38,8 +40,36 @@ public class PeakDetection {
 	// Use the datatype VTL and implement the class Detect.
 
 	public static Query<Integer,Long> qPeaks() {
-		// TODO
-		return null;
+		// convert to VTL
+        Query<Or<Integer,VTL>,Integer> l1 =
+        Q.pipeline(Q.filter(Or::isLeft), Q.map(Or::getLeft));
+
+        Query<Or<Integer,VTL>,Long> r1 =
+        Q.pipeline(Q.filter(Or::isRight), Q.map(o -> o.getRight().ts));
+
+        Query<Or<Integer,VTL>,Long> r2 = Q.pipeline(r1, Q.emit(1, 39L));
+
+        Query<Or<Integer,VTL>,Integer> l2 =
+        Q.pipeline(Q.filter(Or::isLeft), Q.map(Or::getLeft));
+
+
+        Query<Or<Integer,VTL>, Integer> raw = Q.pipeline(l1, Q.ignore(40));
+        Query<Or<Integer,VTL>, Double> l = Q.pipeline(l2, qLength());
+
+
+
+        Query<Or<Integer, VTL>, VTL> vtl = Q.parallel(raw, l, (r, len) -> new VTL(r, 0, len));
+
+        Query<Integer, VTL> timestamp = Q.loop(Q.parallel(r2, vtl, (right, v) -> new VTL(v.v, right + 1, v.l)));
+
+        Query<Integer, VTL> print = Q.pipeline(timestamp, Q.map(v -> {
+        	System.out.println("VTL Data: " + v.v + " " + v.l + " " + v.ts);
+        	return v;
+        }));
+
+        Query<Integer, Long> peaks = Q.pipeline(print, new Detect());
+
+		return peaks;
 	}
 
 	public static void main(String[] args) {
