@@ -56,18 +56,16 @@ public class PeakDetection {
         Query<Or<Integer,VTL>, Integer> raw = Q.pipeline(l1, Q.ignore(40));
         Query<Or<Integer,VTL>, Double> l = Q.pipeline(l2, qLength());
 
-
-
         Query<Or<Integer, VTL>, VTL> vtl = Q.parallel(raw, l, (r, len) -> new VTL(r, 0, len));
 
         Query<Integer, VTL> timestamp = Q.loop(Q.parallel(r2, vtl, (right, v) -> new VTL(v.v, right + 1, v.l)));
 
-        Query<Integer, VTL> print = Q.pipeline(timestamp, Q.map(v -> {
-        	System.out.println("VTL Data: " + v.v + " " + v.l + " " + v.ts);
-        	return v;
-        }));
+        // Query<Integer, VTL> print = Q.pipeline(timestamp, Q.map(v -> {
+        // 	System.out.println("VTL Data: " + v.v + " " + v.l + " " + v.ts);
+        // 	return v;
+        // }));
 
-        Query<Integer, Long> peaks = Q.pipeline(print, new Detect());
+        Query<Integer, Long> peaks = Q.pipeline(timestamp, new Detect());
 
 		return peaks;
 	}
