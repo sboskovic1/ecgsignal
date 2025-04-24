@@ -19,6 +19,8 @@ public class UTestCompress {
 		// nothing to do
 	}
 
+
+
 	@Test
 	public void testCompress1() {
 		System.out.println("***** Test Compress (1) *****");
@@ -50,6 +52,7 @@ public class UTestCompress {
 		for (int i = 0; i < n; i++) {
 			assertEquals(i, sink.count);
 			q.next(arr[i], sink);
+            System.out.println(arr[i] + " vs " + sink.last);
 			assertEquals(arr[i], sink.last);
 		}
 		q.end(sink);
@@ -115,6 +118,7 @@ public class UTestCompress {
 		assertEquals(n, sink.list.size());
 
 		for (int i = 0; i < n; i++) {
+            System.out.println(arr[i] + " vs " + sink.list.get(i));
 			assertEquals(arr[i], sink.list.get(i));
 		}
 	}
