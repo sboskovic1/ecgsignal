@@ -27,7 +27,14 @@ public class Compress {
 	}
 
 	public static Query<Integer,Integer> pack() {
-        return Q.map(x -> x);
+        
+        Query<Integer, Integer> count = Q.scan(0, (a, b) -> a + 1);
+        Query<Integer, Integer> block = Q.pipeline(count, Q.filter(a -> a % BLOCK_SIZE == 0));
+        Query<Integer, Integer> pass = Q.pipeline(block, Q.buf(BLOCK_SIZE));
+        Query<Integer, Character> packed = Q.map(i -> (char) i.intValue());
+        Query<Integer, Integer> merge = Q.parallel(pass, packed, (a, b) -> (int)b);
+
+        return merge;
 
 	}
 

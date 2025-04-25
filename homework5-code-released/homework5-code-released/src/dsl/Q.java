@@ -21,6 +21,10 @@ public class Q {
 		return new Id<>();
 	}
 
+    public static <A> Query<A,A> buf(int n) {
+		return new Buf<>(n);
+	}
+
 	public static <A> Query<A,A> dup() {
 		return new Dup<>();
 	}
